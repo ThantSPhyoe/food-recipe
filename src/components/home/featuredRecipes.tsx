@@ -1,10 +1,8 @@
-import { ArrowRight } from "lucide-react";
-
-
 import { NextPageWithLayout } from "@/pages/_app";
 import { Recipe } from "@/types/recipes";
 import Link from "next/link";
 import RecipeCard from "../recipe/recipeCard";
+import { ArrowRightIcon } from "../icons";
 
 type Props = {
   featuredRecipes?: Recipe[] | null
@@ -27,7 +25,7 @@ const FeaturedRecipes: NextPageWithLayout<Props> = ( { featuredRecipes } ) => {
             className="inline-flex items-center gap-2 text-primary font-medium mt-4 md:mt-0 hover:gap-3 transition-all"
           >
             View all recipes
-            <ArrowRight className="w-5 h-5" />
+            <ArrowRightIcon className="w-5 h-5" />
           </Link>
         </div>
 

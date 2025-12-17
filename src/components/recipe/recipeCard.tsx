@@ -1,6 +1,6 @@
 import { Recipe } from "@/types/recipes";
-import { Clock, Users } from "lucide-react";
 import Link from "next/link";
+import { ClockIcon, UsersIcon } from "../icons";
 
 interface RecipeCardProps {
   recipe: Recipe;
@@ -35,7 +35,7 @@ const RecipeCard = ({
 
         {/* Category */}
         <div className="absolute top-4 left-4">
-          <span className="category-badge">{recipe.description}</span>
+          <span className="category-badge">{recipe.categoryName}</span>
         </div>
 
         {/* Difficulty */}
@@ -66,13 +66,13 @@ const RecipeCard = ({
 
         <div className="flex items-center gap-4 text-sm text-muted-foreground">
           <div className="flex items-center gap-1.5">
-            <Clock className="w-4 h-4" />
-            <span>{recipe.createdAt}</span>
+            <ClockIcon className="w-4 h-4" />
+            <span>{recipe.timeRequired}</span>
           </div>
 
           <div className="flex items-center gap-1.5">
-            <Users className="w-4 h-4" />
-            <span>{recipe.userId} servings</span>
+            <UsersIcon className="w-4 h-4" />
+            <span>{recipe.serveSize} servings</span>
           </div>
         </div>
       </div>

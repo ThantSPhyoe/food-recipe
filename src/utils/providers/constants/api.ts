@@ -16,5 +16,6 @@ export const API_STATUS_CODE = {
 };
 
 export const API_URL = {
-  HOME_PAGE : `${URL_BASE}/Recipe/HomePageInfo`,
+  HOME_PAGE: `${URL_BASE}/Recipe/HomePageInfo`,
+  CATEGORY: `${URL_BASE}/category`, 
 };

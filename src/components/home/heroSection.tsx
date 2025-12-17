@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { Sparkles, ArrowRight } from "lucide-react";
 import { NextPageWithLayout } from "@/pages/_app";
+import { ArrowRightIcon, SparklesIcon } from "../icons";
 
 type Props = {
   count?: number
@@ -22,7 +22,7 @@ const HeroSection : NextPageWithLayout<Props> = ( { count }) => {
       <div className="relative z-10 max-w-7xl mx-auto container-padding w-full">
         <div className="max-w-2xl">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary mb-6 animate-fade-up">
-            <Sparkles className="w-4 h-4" />
+            <SparklesIcon className="w-4 h-4" />
             <span className="text-sm font-medium">Discover new flavors</span>
           </div>
           
@@ -38,7 +38,7 @@ const HeroSection : NextPageWithLayout<Props> = ( { count }) => {
           <div className="flex flex-wrap gap-4 animate-fade-up delay-300">
             <Link href="/recipes" className="btn-primary inline-flex items-center gap-2">
               Explore Recipes
-              <ArrowRight className="w-5 h-5" />
+              <ArrowRightIcon className="w-5 h-5" />
             </Link>
             <Link href="/add-recipe" className="btn-secondary inline-flex items-center gap-2">
               Share Your Recipe

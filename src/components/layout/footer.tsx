@@ -1,6 +1,7 @@
 import { ChefHat } from "lucide-react";
 
 import Link from "next/link";
+import { HeartIcon } from "../icons";
 
 const Footer = () => {
   return (
@@ -81,7 +82,7 @@ const Footer = () => {
             © 2026 Savory. All rights reserved.
           </p>
           <p className="text-muted-foreground text-sm flex items-center gap-1">
-            Made with ❤️ for food lovers
+            Made with <HeartIcon className="w-4 h-4 text-primary fill-primary" /> for food lovers
           </p>
         </div>
       </div>

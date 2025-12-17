@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useRouter } from "next/router";
-import { Menu, X, ChefHat } from "lucide-react";
 import Link from "next/link";
+import { ChefHatIcon, XIcon, MenuIcon } from "../icons";
 
 const navLinks = [
   { name: "Home", path: "/" },
@@ -25,7 +25,7 @@ const Navbar = () => {
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 group">
             <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center transition-transform duration-300 group-hover:scale-105">
-              <ChefHat className="w-6 h-6 text-primary-foreground" />
+              <ChefHatIcon className="w-6 h-6 text-primary-foreground" />
             </div>
             <span className="font-display text-xl font-semibold text-foreground">
               Savory
@@ -80,9 +80,9 @@ const Navbar = () => {
             aria-label="Toggle menu"
           >
             {isOpen ? (
-              <X className="w-6 h-6 text-foreground" />
+              <XIcon className="w-6 h-6 text-foreground" />
             ) : (
-              <Menu className="w-6 h-6 text-foreground" />
+              <MenuIcon className="w-6 h-6 text-foreground" />
             )}
           </button>
         </div>
