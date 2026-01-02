@@ -1,54 +1,67 @@
+import { useState } from "react";
+import { useForm, useFieldArray } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { ChefHatIcon, MinusIcon, PlusIcon, UploadIcon } from "@/components/icons";
-import Layout from "@/components/layout/layout";
-import { Toast } from "@/components/ui/toast";
-import { Category } from "@/types/category";
 import { api } from "@/utils/providers/api/api";
 import { API_URL } from "@/utils/providers/constants/api";
-import { useEffect, useState } from "react";
+import { Category } from "@/types/category";
+import TopPage from "..";
+import { PAGE_LIST } from "@/utils/constant/common";
+import Layout from "@/components/layout/layout";
+
+
+const recipeSchema = z.object({
+  title: z.string().min(3, "Title must be at least 3 characters").max(100, "Title must be less than 100 characters"),
+  description: z.string().min(10, "Description must be at least 10 characters").max(500, "Description must be less than 500 characters"),
+  category: z.string().min(1, "Please select a category"),
+  difficulty: z.string().min(1, "Please select a difficulty"),
+  cookTime: z.string().min(1, "Cook time is required").max(50, "Cook time must be less than 50 characters"),
+  servings: z.coerce.number().min(1, "Servings must be at least 1").max(100, "Servings must be less than 100"),
+  ingredients: z.array(z.object({
+    name: z.string().min(1, "Ingredient name is required"),
+    quantity: z.string().min(1, "Quantity is required"),
+    unit: z.string().min(1, "Unit is required"),
+  })).min(1, "At least one ingredient is required"),
+  instructions: z.array(z.object({
+    value: z.string().min(1, "Instruction cannot be empty")
+  })).min(1, "At least one instruction is required"),
+});
+
+type RecipeFormData = z.infer<typeof recipeSchema>;
 
 const AddRecipe = () => {
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [category, setCategory] = useState("");
-  const [difficulty, setDifficulty] = useState("");
-  const [cookTime, setCookTime] = useState("");
-  const [servings, setServings] = useState("");
-  const [ingredients, setIngredients] = useState([""]);
-  const [instructions, setInstructions] = useState([""]);
   const [imagePreview, setImagePreview] = useState("");
-  const [categories, setCategories] = useState<Category[]>();
+  const [categories, setCategories] = useState<Category[]>([]);
 
-  const handleAddIngredient = () => {
-    setIngredients([...ingredients, ""]);
-  };
+  const {
+    register,
+    handleSubmit,
+    control,
+    formState: { errors, isSubmitting },
+  } = useForm<RecipeFormData>({
+    resolver: zodResolver(recipeSchema),
+    defaultValues: {
+      title: "",
+      description: "",
+      category: "",
+      difficulty: "",
+      cookTime: "",
+      servings: undefined,
+      ingredients: [{ name: "", quantity: "", unit: "" }],
+      instructions: [{ value: "" }],
+    },
+  });
 
-  const handleRemoveIngredient = (index: number) => {
-    if (ingredients.length > 1) {
-      setIngredients(ingredients.filter((_, i) => i !== index));
-    }
-  };
+  const { fields: ingredientFields, append: appendIngredient, remove: removeIngredient } = useFieldArray({
+    control,
+    name: "ingredients",
+  });
 
-  const handleIngredientChange = (index: number, value: string) => {
-    const newIngredients = [...ingredients];
-    newIngredients[index] = value;
-    setIngredients(newIngredients);
-  };
-
-  const handleAddInstruction = () => {
-    setInstructions([...instructions, ""]);
-  };
-
-  const handleRemoveInstruction = (index: number) => {
-    if (instructions.length > 1) {
-      setInstructions(instructions.filter((_, i) => i !== index));
-    }
-  };
-
-  const handleInstructionChange = (index: number, value: string) => {
-    const newInstructions = [...instructions];
-    newInstructions[index] = value;
-    setInstructions(newInstructions);
-  };
+  const { fields: instructionFields, append: appendInstruction, remove: removeInstruction } = useFieldArray({
+    control,
+    name: "instructions",
+  });
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -61,30 +74,28 @@ const AddRecipe = () => {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    Toast({
-      title: "Recipe submitted!",
-      description: "Your recipe has been added successfully.",
-    });
-  };
 
-  const fetchCategories = async () => {
-     try{
-        var response = await api.getWithoutAuth({endPoint: API_URL.CATEGORY});
-        var result = await response.json();
-        setCategories(result.data);
-     }catch(err){
-        throw err;
-     }
+  const fetchCategories = () => {
+    const result = api.getWithoutAuth({ endPoint: API_URL.CATEGORY});
+    const json = result.then(res => res.json());
+    json.then(data => setCategories(data.data));
   }
-  useEffect(() => {
+
+  useState(() => {
     fetchCategories();
-  }, [])
+  });
+
+  const onSubmit = (data: RecipeFormData) => {
+    console.log("Form data:", data);
+    // toast({
+    //   title: "Recipe submitted!",
+    //   description: "Your recipe has been added successfully.",
+    // });
+  };
 
   return (
     <Layout>
-      <section className="py-12 md:py-16">
+      <div className="py-12 md:py-16">
         <div className="max-w-3xl mx-auto container-padding">
           {/* Header */}
           <div className="text-center mb-12">
@@ -100,17 +111,14 @@ const AddRecipe = () => {
           </div>
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-8">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
             {/* Image Upload */}
             <div>
               <label className="block text-sm font-medium text-foreground mb-3">
                 Recipe Photo
               </label>
               <div
-                className={`
-                  "relative border-2 border-dashed border-border rounded-2xl overflow-hidden transition-colors hover:border-primary/50",
-                  ${imagePreview ? "aspect-video" : "aspect-[16/9]"}`
-                }
+                className={`relative border-2 border-dashed border-border rounded-2xl overflow-hidden transition-colors hover:border-primary/50 ${imagePreview ? "aspect-video" : "aspect-[16/9]"}`}
               >
                 {imagePreview ? (
                   <img
@@ -142,12 +150,13 @@ const AddRecipe = () => {
                 </label>
                 <input
                   type="text"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
+                  {...register("title")}
                   placeholder="e.g., Homemade Pasta Carbonara"
-                  className="input-field"
-                  required
+                  className={`input-field ${errors.title ? "border-destructive" : ""}`}
                 />
+                {errors.title && (
+                  <p className="text-sm text-destructive mt-1">{errors.title.message}</p>
+                )}
               </div>
 
               <div className="md:col-span-2">
@@ -155,13 +164,14 @@ const AddRecipe = () => {
                   Description
                 </label>
                 <textarea
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
+                  {...register("description")}
                   placeholder="Describe your recipe in a few sentences..."
                   rows={3}
-                  className="input-field resize-none"
-                  required
+                  className={`input-field resize-none ${errors.description ? "border-destructive" : ""}`}
                 />
+                {errors.description && (
+                  <p className="text-sm text-destructive mt-1">{errors.description.message}</p>
+                )}
               </div>
 
               <div>
@@ -169,18 +179,19 @@ const AddRecipe = () => {
                   Category
                 </label>
                 <select
-                  value={category}
-                  onChange={(e) => setCategory(e.target.value)}
-                  className="input-field"
-                  required
+                  {...register("category")}
+                  className={`input-field ${errors.category ? "border-destructive" : ""}`}
                 >
                   <option value="">Select a category</option>
-                  {categories?.map((cat) => (
+                  {categories.map((cat) => (
                     <option key={cat.name} value={cat.name}>
-                        {cat.name}
+                      {cat.name}
                     </option>
                   ))}
                 </select>
+                {errors.category && (
+                  <p className="text-sm text-destructive mt-1">{errors.category.message}</p>
+                )}
               </div>
 
               <div>
@@ -188,16 +199,17 @@ const AddRecipe = () => {
                   Difficulty
                 </label>
                 <select
-                  value={difficulty}
-                  onChange={(e) => setDifficulty(e.target.value)}
-                  className="input-field"
-                  required
+                  {...register("difficulty")}
+                  className={`input-field ${errors.difficulty ? "border-destructive" : ""}`}
                 >
                   <option value="">Select difficulty</option>
                   <option value="Easy">Easy</option>
                   <option value="Medium">Medium</option>
                   <option value="Hard">Hard</option>
                 </select>
+                {errors.difficulty && (
+                  <p className="text-sm text-destructive mt-1">{errors.difficulty.message}</p>
+                )}
               </div>
 
               <div>
@@ -206,12 +218,13 @@ const AddRecipe = () => {
                 </label>
                 <input
                   type="text"
-                  value={cookTime}
-                  onChange={(e) => setCookTime(e.target.value)}
+                  {...register("cookTime")}
                   placeholder="e.g., 45 min"
-                  className="input-field"
-                  required
+                  className={`input-field ${errors.cookTime ? "border-destructive" : ""}`}
                 />
+                {errors.cookTime && (
+                  <p className="text-sm text-destructive mt-1">{errors.cookTime.message}</p>
+                )}
               </div>
 
               <div>
@@ -220,13 +233,14 @@ const AddRecipe = () => {
                 </label>
                 <input
                   type="number"
-                  value={servings}
-                  onChange={(e) => setServings(e.target.value)}
+                  {...register("servings")}
                   placeholder="e.g., 4"
                   min="1"
-                  className="input-field"
-                  required
+                  className={`input-field ${errors.servings ? "border-destructive" : ""}`}
                 />
+                {errors.servings && (
+                  <p className="text-sm text-destructive mt-1">{errors.servings.message}</p>
+                )}
               </div>
             </div>
 
@@ -236,21 +250,46 @@ const AddRecipe = () => {
                 Ingredients
               </label>
               <div className="space-y-3">
-                {ingredients.map((ingredient, index) => (
-                  <div key={index} className="flex gap-3">
-                    <input
-                      type="text"
-                      value={ingredient}
-                      onChange={(e) => handleIngredientChange(index, e.target.value)}
-                      placeholder={`Ingredient ${index + 1}`}
-                      className="input-field flex-1"
-                      required
-                    />
+                {ingredientFields.map((field, index) => (
+                  <div key={field.id} className="flex gap-3">
+                    <div className="flex-[2]">
+                      <input
+                        type="text"
+                        {...register(`ingredients.${index}.name`)}
+                        placeholder="Ingredient"
+                        className={`input-field w-full ${errors.ingredients?.[index]?.name ? "border-destructive" : ""}`}
+                      />
+                      {errors.ingredients?.[index]?.name && (
+                        <p className="text-sm text-destructive mt-1">{errors.ingredients[index]?.name?.message}</p>
+                      )}
+                    </div>
+                    <div className="flex-1">
+                      <input
+                        type="text"
+                        {...register(`ingredients.${index}.quantity`)}
+                        placeholder="Qty"
+                        className={`input-field w-full ${errors.ingredients?.[index]?.quantity ? "border-destructive" : ""}`}
+                      />
+                      {errors.ingredients?.[index]?.quantity && (
+                        <p className="text-sm text-destructive mt-1">{errors.ingredients[index]?.quantity?.message}</p>
+                      )}
+                    </div>
+                    <div className="flex-1">
+                      <input
+                        type="text"
+                        {...register(`ingredients.${index}.unit`)}
+                        placeholder="Unit"
+                        className={`input-field w-full ${errors.ingredients?.[index]?.unit ? "border-destructive" : ""}`}
+                      />
+                      {errors.ingredients?.[index]?.unit && (
+                        <p className="text-sm text-destructive mt-1">{errors.ingredients[index]?.unit?.message}</p>
+                      )}
+                    </div>
                     <button
                       type="button"
-                      onClick={() => handleRemoveIngredient(index)}
+                      onClick={() => removeIngredient(index)}
                       className="w-12 h-12 rounded-xl bg-muted text-muted-foreground hover:bg-destructive hover:text-destructive-foreground transition-colors flex items-center justify-center"
-                      disabled={ingredients.length === 1}
+                      disabled={ingredientFields.length === 1}
                     >
                       <MinusIcon className="w-5 h-5" />
                     </button>
@@ -258,13 +297,16 @@ const AddRecipe = () => {
                 ))}
                 <button
                   type="button"
-                  onClick={handleAddIngredient}
+                  onClick={() => appendIngredient({ name: "", quantity: "", unit: "" })}
                   className="btn-secondary w-full inline-flex items-center justify-center gap-2"
                 >
                   <PlusIcon className="w-5 h-5" />
                   Add Ingredient
                 </button>
               </div>
+              {errors.ingredients?.root && (
+                <p className="text-sm text-destructive mt-1">{errors.ingredients.root.message}</p>
+              )}
             </div>
 
             {/* Instructions */}
@@ -273,26 +315,29 @@ const AddRecipe = () => {
                 Instructions
               </label>
               <div className="space-y-3">
-                {instructions.map((instruction, index) => (
-                  <div key={index} className="flex gap-3">
+                {instructionFields.map((field, index) => (
+                  <div key={field.id} className="flex gap-3">
                     <div className="flex items-start gap-3 flex-1">
                       <span className="flex-shrink-0 w-8 h-8 rounded-full bg-primary text-primary-foreground font-semibold flex items-center justify-center text-sm mt-2">
                         {index + 1}
                       </span>
-                      <textarea
-                        value={instruction}
-                        onChange={(e) => handleInstructionChange(index, e.target.value)}
-                        placeholder={`Step ${index + 1}`}
-                        rows={2}
-                        className="input-field flex-1 resize-none"
-                        required
-                      />
+                      <div className="flex-1">
+                        <textarea
+                          {...register(`instructions.${index}.value`)}
+                          placeholder={`Step ${index + 1}`}
+                          rows={2}
+                          className={`input-field w-full resize-none ${errors.instructions?.[index]?.value ? "border-destructive" : ""}`}
+                        />
+                        {errors.instructions?.[index]?.value && (
+                          <p className="text-sm text-destructive mt-1">{errors.instructions[index]?.value?.message}</p>
+                        )}
+                      </div>
                     </div>
                     <button
                       type="button"
-                      onClick={() => handleRemoveInstruction(index)}
+                      onClick={() => removeInstruction(index)}
                       className="w-12 h-12 rounded-xl bg-muted text-muted-foreground hover:bg-destructive hover:text-destructive-foreground transition-colors flex items-center justify-center mt-2"
-                      disabled={instructions.length === 1}
+                      disabled={instructionFields.length === 1}
                     >
                       <MinusIcon className="w-5 h-5" />
                     </button>
@@ -300,24 +345,34 @@ const AddRecipe = () => {
                 ))}
                 <button
                   type="button"
-                  onClick={handleAddInstruction}
+                  onClick={() => appendInstruction({ value: "" })}
                   className="btn-secondary w-full inline-flex items-center justify-center gap-2"
                 >
                   <PlusIcon className="w-5 h-5" />
                   Add Step
                 </button>
               </div>
+              {errors.instructions?.root && (
+                <p className="text-sm text-destructive mt-1">{errors.instructions.root.message}</p>
+              )}
             </div>
 
             {/* Submit Button */}
-            <button type="submit" className="btn-primary w-full text-lg py-4">
-              Publish Recipe
+            <button 
+              type="submit" 
+              className="btn-primary w-full text-lg py-4"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? "Publishing..." : "Publish Recipe"}
             </button>
           </form>
         </div>
-      </section>
+      </div>
     </Layout>
   );
 };
+
+TopPage.pageId = PAGE_LIST.USER.Category.ID;
+TopPage.auth = PAGE_LIST.USER.Category.AUTH;
 
 export default AddRecipe;

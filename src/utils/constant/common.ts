@@ -129,6 +129,11 @@ export const PAGE_LIST = {
       ID: '/RECIPE_TOP',
       URL: '/',
       AUTH: false,
+    },
+    Category: {
+      ID: '/RECIPE_CATEGORY',
+      URL: '/add-recipe',
+      AUTH: false,
     }
   },
 };

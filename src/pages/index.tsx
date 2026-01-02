@@ -1,7 +1,6 @@
 import CategoriesSection from "@/components/home/categoriesSection";
 import FeaturedRecipes from "@/components/home/featuredRecipes";
 import HeroSection from "@/components/home/heroSection";
-import NewsLetterSection from "@/components/home/newsLetterSection";
 import Layout from "@/components/layout/layout";
 import type { NextPageWithLayout } from "@/pages/_app";
 import { PAGE_LIST } from "@/utils/constant/common";
