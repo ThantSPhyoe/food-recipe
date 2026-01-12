@@ -1,13 +1,11 @@
-import CategoriesSection from "@/components/home/categoriesSection";
-import FeaturedRecipes from "@/components/home/featuredRecipes";
-import HeroSection from "@/components/home/heroSection";
-import Layout from "@/components/layout/layout";
+import ApologySection from "@/components/apology-section";
+import FloatingSadEmotes from "@/components/floating-hearts";
+import ForgiveSection from "@/components/forgive-section";
+import HeroSection from "@/components/hero-secton";
+import PromiseSection from "@/components/promise-section";
+import ReasonsSection from "@/components/reason-section";
 import type { NextPageWithLayout } from "@/pages/_app";
 import { PAGE_LIST } from "@/utils/constant/common";
-import { useEffect, useState } from "react";
-import { api } from "@/utils/providers/api/api";
-import { API_URL } from "@/utils/providers/constants/api";
-import { HomePageInfo } from "@/types/homePageInfo";
 
 type Props = {
   error: string;
@@ -16,30 +14,22 @@ type Props = {
 };
 
 const TopPage: NextPageWithLayout<Props> = () => {
-
-  const [homePageInfo, setHomePageInfo]  = useState<HomePageInfo | null>(null);
-  const fetchData = async () => {
-      try {
-        const res = await api.getWithoutAuth({ endPoint: API_URL.HOME_PAGE});
-        const json = await res.json();
-        setHomePageInfo(json.data);
-      } catch (err) {
-        console.error(err);
-      }
-    };
-
-  useEffect(() => {
-
-    fetchData();
-  }, []);
-
   return <>
-    <Layout>
-      <HeroSection count={homePageInfo?.count} />
-      <CategoriesSection categories={homePageInfo?.category}/>
-      <FeaturedRecipes featuredRecipes={homePageInfo?.recipes}/>
-      {/* <NewsLetterSection /> */}
-    </Layout>
+    <div className="relative min-h-screen overflow-x-hidden">
+       <FloatingSadEmotes />
+      <main className="relative z-10">
+        <HeroSection />
+        <ApologySection />
+        <ReasonsSection />
+        <PromiseSection />
+        <ForgiveSection />
+        <footer className="py-12 text-center">
+          <p className="font-body text-muted-foreground/60 text-sm">
+            Made with love, for you ♥
+          </p>
+        </footer>
+      </main>
+    </div>
   </>;
 };
 
